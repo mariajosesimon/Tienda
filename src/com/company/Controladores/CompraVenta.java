@@ -2,16 +2,15 @@ package com.company.Controladores;
 
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
@@ -48,7 +47,7 @@ public class CompraVenta {
     ControladorVendedor cVendedor = new ControladorVendedor();
     ControladorArticulo cArticulo = new ControladorArticulo();
 
-    public void CrearCompraVenta(Collection col) throws IOException, XMLDBException {
+    public void CrearCompraVenta(Collection col) throws IOException, XMLDBException, TransformerException {
 
 
         //*************************** CLIENTE ************************************
@@ -70,12 +69,13 @@ public class CompraVenta {
         ResourceSet resultCliente = servicioCli.query("/Clientes/Cliente[@id=" + clienteElegido + "]/NombreCliente/text()");
         ResourceIterator j;
         j = resultCliente.getIterator();
-        while(j.hasMoreResources()) {
+        while (j.hasMoreResources()) {
             Resource h = j.nextResource();
-            nombreCliente = (String)h.getContent();
+            nombreCliente = (String) h.getContent();
         }
 
         //*************************** VENDEDOR ************************************
+
         String vendedorElegido = "";
         boolean existeVendedor = false;
         do {
@@ -92,12 +92,10 @@ public class CompraVenta {
         ResourceSet resultVendedor = servicioVend.query("/Vendedores/Vendedor[@id=" + vendedorElegido + "]/NombreVendedor/text()");
         ResourceIterator k;
         k = resultVendedor.getIterator();
-        while(k.hasMoreResources()) {
+        while (k.hasMoreResources()) {
             Resource l = k.nextResource();
-            nombreVendedor = (String)l.getContent();
+            nombreVendedor = (String) l.getContent();
         }
-
-
 
         //*************************** COMPRA ************************************
         /* 5- Mostrar articulos
@@ -141,7 +139,7 @@ public class CompraVenta {
             a = resultArticulo.getIterator();
             while (a.hasMoreResources()) {
                 Resource r = a.nextResource();
-                nombreArticulo = (String)r.getContent();
+                nombreArticulo = (String) r.getContent();
             }
 
             c.setNombreArticulo(nombreArticulo);
@@ -155,6 +153,7 @@ public class CompraVenta {
 
 
         //----------------- SABER ULTIMO ID.-----------------------
+
         int ultimoId = -1;
 
         XPathQueryService servicio;
@@ -172,10 +171,10 @@ public class CompraVenta {
         while (i.hasMoreResources()) {
             Resource r = i.nextResource();
             String resultado = r.getContent().toString();
-            System.out.println(resultado);
+            // System.out.println(resultado);
             if (!(resultado.equals(""))) {
                 ultimoId = Integer.parseInt(resultado);
-                System.out.println(ultimoId);
+                // System.out.println(ultimoId);
                 ultimoId++;
 
             } else {
@@ -194,20 +193,7 @@ public class CompraVenta {
             crearElemento(col);
         }
 
-
         //Generar el xml
-        /*
-         * <Venta id>
-         * <Cliente>nombre</Cliente>
-         * <Vendedor>nombre</Vendedor>
-         * <Compra>
-         * <ProductoUnidades total = "precio*unidades">
-         * <Articulo>nombre</Articulo>
-         * <Cantidad>unidades</Cantidad>
-         * </ProductoUnidades>
-         * </Compra>
-         * </Venta>
-         * */
 
         String cadenaCompra = lecturaCompra(compra, col);
 
@@ -218,18 +204,23 @@ public class CompraVenta {
             crearElemento(col);
         }
 
-        String  NuevaCompraVenta = "<Venta id=\"" + String.valueOf(ultimoId) + "\"><Cliente>" + nombreCliente + "</Cliente><Vendedor>" + nombreVendedor + "</Vendedor><Compra>"+ cadenaCompra +"</Compra></Venta>";
-
+        String NuevaCompraVenta = "<Venta id=\"" + String.valueOf(ultimoId) + "\"><Cliente>" + nombreCliente + "</Cliente><Vendedor>" + nombreVendedor + "</Vendedor><Compra>" + cadenaCompra + "</Compra></Venta>";
         XPathQueryService servicioCompraVenta;
         servicioCompraVenta = (XPathQueryService) col.getService("XPathQueryService", "1.0");
 
         ResourceSet insertarCompraVenta = servicioCompraVenta.query("update insert " + NuevaCompraVenta + " into /CompraVenta");
 
+        //Generar fichero xml por si quisieramos exportarlo.
+        generarFicheroXMLCompraVenta(col);
         col.close();
         System.out.println("Compra venta insertada.");
 
-
     }
+    public void ModificarCompraVenta(Collection col){
+        
+    }
+    public void EliminarCompraVenta(Collection col){}
+    public void ListarCompraVenta(Collection col){}
 
     String lecturaCompra(ArrayList<Compra> compra, Collection col) throws XMLDBException, IOException {
 
@@ -237,8 +228,8 @@ public class CompraVenta {
          <ProductoUnidades total = "precio*unidades">
          * <Articulo>nombre</Articulo>
          * <Cantidad>unidades</Cantidad>
-         * </ProductoUnidades>
-                */
+         * </ProductoUnidades>  */
+
         double precio, total;
 
         String cadenaDevolver = "";
@@ -248,7 +239,6 @@ public class CompraVenta {
         String resultado = "";
         double price;
         for (Compra c : compra) {
-
             XPathQueryService sPrecio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
             ResourceSet resultadoPrecio = sPrecio.query("/Articulos/Articulo[NombreArticulo=\"" + c.getNombreArticulo() + "\"]/Precio/text()");
             System.out.println(c.getNombreArticulo());
@@ -258,25 +248,11 @@ public class CompraVenta {
                 resultado = r.getContent().toString();
             }
             price = Double.parseDouble(resultado);
-
             total = c.getCantidad() * price;  // calculamos el total de unidades comprada por el precio del articulo
             cadenaDevolver = cadenaDevolver.concat("<ProductoUnidades total = \"" + String.format("%.2f", total) + "\"><Articulo>" + c.getNombreArticulo() + "</Articulo><Cantidad>" + c.getCantidad() + "</Cantidad></ProductoUnidades>");
-
-            /*Generar un fichero .dat para almacenar los totales que luego utilizaré para calculos de las mediaVentas*/
-
-            generarDatTotales(total);
-
         }
         return cadenaDevolver;
 
-
-    }
-
-    void generarDatTotales(double total) throws IOException {
-        //Creación del archivo .dat con los clientes.
-        DataOutputStream fon = new DataOutputStream(new FileOutputStream("Totales.dat", true));
-        fon.writeDouble(total);
-        fon.close();
 
     }
 
@@ -314,8 +290,8 @@ public class CompraVenta {
         DOMImplementation implementation = docBuilder.getDOMImplementation();
 
         //Elemento raíz
-        Document dcliente = implementation.createDocument(null, "CompraVenta", null);
-        ;
+        Document dcompraVenta = implementation.createDocument(null, "CompraVenta", null);
+
         //Se escribe el contenido del XML en un archivo
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = null;
@@ -325,7 +301,7 @@ public class CompraVenta {
                 TransformerConfigurationException e) {
             e.printStackTrace();
         }
-        DOMSource source = new DOMSource(dcliente);
+        DOMSource source = new DOMSource(dcompraVenta);
         StreamResult result = new StreamResult(f);
         try {
             transformer.transform(source, result);
@@ -333,6 +309,30 @@ public class CompraVenta {
                 TransformerException e) {
             e.printStackTrace();
         }
+    }
+
+    void generarFicheroXMLCompraVenta(Collection col) throws XMLDBException, TransformerException {
+
+        XMLResource res = (XMLResource) col.getResource("CompraVenta.xml");
+
+        File file = new File("CompraVentasExport.xml");
+        // Volcado del documento a un arbol DOM
+        Node document = res.getContentAsDOM();
+        Source source = new DOMSource(document);
+        Result resultado = new StreamResult(String.valueOf(file));
+        Transformer transformer = TransformerFactory.newInstance().newTransformer();
+        transformer.transform(source, resultado);
+
+      /* DE ESTA FORMA MUESTRA POR PANTALLA EL XML COMPLETO Y NO QUIERO QUE SE MUESTRE POR PANTALLA, SOLO QUIERO ALMACENAR
+        Transformer transformer = TransformerFactory.newInstance().newTransformer();
+        // Volcado del documento de memoria a consola
+        Result console = new StreamResult(System.out);
+        transformer.transform(source, console);
+        // Volcado del documento a un fichero
+        Result fichero = new StreamResult(new java.io.File("CompraVentasExport.xml"));
+        transformer = TransformerFactory.newInstance().newTransformer();
+        transformer.transform(source, fichero);
+*/
     }
 
 }

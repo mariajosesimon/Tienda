@@ -6,6 +6,7 @@ import org.xmldb.api.base.*;
 import org.xmldb.api.modules.XPathQueryService;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -142,13 +143,13 @@ public class Main {
                                         cv.CrearCompraVenta(col);
                                         break;
                                     case 2:
-                                        cArticulo.ModificarArticulo(col);
+                                        cv.ModificarCompraVenta(col);
                                         break;
                                     case 3:
-                                        cArticulo.EliminarArticulo(col);
+                                        cv.EliminarCompraVenta(col);
                                         break;
                                     case 4:
-                                        cArticulo.ListarArticulos(col);
+                                        cv.ListarCompraVenta(col);
                                         break;
                                 }
 
@@ -172,12 +173,12 @@ public class Main {
                     e.printStackTrace();
                 } catch (ParserConfigurationException e) {
                     e.printStackTrace();
+                } catch (TransformerException e) {
+                    e.printStackTrace();
                 }
 
 
-
-
-        } while (!(op > 0 && op < 18));
+            } while (!(op > 0 && op < 18));
 
     } while(op !=17);
 
