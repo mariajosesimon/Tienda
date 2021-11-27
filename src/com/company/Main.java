@@ -1,17 +1,13 @@
 package com.company;
 
-import com.company.Controladores.Conexion;
-import com.company.Controladores.ControladorCliente;
-import org.xml.sax.SAXException;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
+import com.company.ConsultasSinInteraccion.ConsultaMediaVentas;
+import com.company.Controladores.*;
+import org.xmldb.api.base.*;
 import org.xmldb.api.modules.XPathQueryService;
 
-import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -20,90 +16,226 @@ public class Main {
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-       final  Collection col = Conexion.conectar();
-
-
+        final Collection col = Conexion.conectar();
         ControladorCliente cCliente = new ControladorCliente();
-
+        ControladorVendedor cVendedor = new ControladorVendedor();
+        ControladorArticulo cArticulo = new ControladorArticulo();
+        CompraVenta cv = new CompraVenta();
+        int submenu = 0;
         int op = 0;
         do {
             do {
                 try {
                     mostrarMenu();
-
                     op = Integer.parseInt(br.readLine());
 
                     switch (op) {
                         case 1:
-                            // Crear Cliente
-                            cCliente.CrearCliente(col);
+                            menuClientes();
+                            submenu = Integer.parseInt(br.readLine());
+                            switch (submenu) {
+                                case 1:
+                                    cCliente.CrearCliente(col);
+                                    break;
+                                case 2:
+                                    cCliente.ModificarCliente(col);
+                                    break;
+                                case 3:
+                                    cCliente.EliminarCliente(col);
+                                    break;
+                                case 4:
+                                    cCliente.ListarClientes(col);
+                                    break;
 
-
+                            }
                             break;
                         case 2:
-                            //Modificar Cliente.
-
+                            menusVendedores();
+                            submenu = Integer.parseInt(br.readLine());
+                            switch (submenu) {
+                                case 1:
+                                    cVendedor.CrearVendedor(col);
+                                    break;
+                                case 2:
+                                    cVendedor.ModificarVendedor(col);
+                                    break;
+                                case 3:
+                                    cVendedor.EliminarVendedor(col);
+                                    break;
+                                case 4:
+                                    cVendedor.ListarVendedores(col);
+                                    break;
+                            }
                             break;
                         case 3:
-                            // 3. Eliminar Cliente.
-
-
+                            menuArticulos();
+                            submenu = Integer.parseInt(br.readLine());
+                            switch (submenu) {
+                                case 1:
+                                    cArticulo.CrearArticulo(col);
+                                    break;
+                                case 2:
+                                    cArticulo.ModificarArticulo(col);
+                                    break;
+                                case 3:
+                                    cArticulo.EliminarArticulo(col);
+                                    break;
+                                case 4:
+                                    cArticulo.ListarArticulos(col);
+                                    break;
+                            }
                             break;
                         case 4:
+                            // Hay que revisar si hay clientes, vendedores y articulos sino, no se puede entrar el la funcion
+                            XPathQueryService servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
+                            String existenClientes = "";
+                            String existenVendedores = "";
+                            String existenArticulos = "";
+                            try {
+                                //Consulta para consultar si existen clientes
+                                ResourceSet resultClientes = servicio.query("/Clientes/count(Cliente)");
 
-                            // Listado Clientes.
+                                ResourceIterator i;
+                                i = resultClientes.getIterator();
+                                while(i.hasMoreResources()) {
+                                    Resource r = i.nextResource();
+                                    existenClientes = (String) r.getContent();
+                                }
+                                ResourceSet resultVendedores = servicio.query("/Vendedores/count(Vendedor)");
+                                ResourceIterator j;
+                                j = resultVendedores.getIterator();
+                                while(j.hasMoreResources()) {
+                                    Resource t = j.nextResource();
+                                    existenVendedores = (String) t.getContent();
+                                }
+                                ResourceSet resultArticulos = servicio.query("/Articulos/count(Articulo)");
+                                ResourceIterator s;
+                                s = resultArticulos.getIterator();
+                                while(!s.hasMoreResources()) {
+                                    Resource u = s.nextResource();
+                                    existenArticulos = (String) u.getContent();
+                                }
+                            } catch (Exception e) {
+                                System.out.println("Error al consultar.");
+                            }
+                            boolean puedeComprar = true;
+                            if (existenArticulos.equals("0")) {
+                                System.out.println("No existen articulos. No se puede realizar una compraventa");
+                                puedeComprar = false;
+                            }
+                            if (existenClientes.equals("0")) {
+                                System.out.println("No existen clientes. No se puede realizar una compraventa");
 
+                                puedeComprar = false;
+                            }
+                            if (existenVendedores.equals("0")) {
+                                System.out.println("No existen vendedores. No se puede realizar una compraventa");
+
+                                puedeComprar = false;
+                            }
+                            if (puedeComprar) {
+                                //Meter menu de compra venta
+                                menuCompraVenta();
+                                submenu = Integer.parseInt(br.readLine());
+                                switch (submenu) {
+                                    case 1:
+                                        cv.CrearCompraVenta(col);
+                                        break;
+                                    case 2:
+                                        cArticulo.ModificarArticulo(col);
+                                        break;
+                                    case 3:
+                                        cArticulo.EliminarArticulo(col);
+                                        break;
+                                    case 4:
+                                        cArticulo.ListarArticulos(col);
+                                        break;
+                                }
+
+
+                            }
                             break;
                         case 5:
-                            //eliminar una venta.
 
-
+                            File total = new File("Totales.dat");
+                            if(total.exists()) {
+                                ConsultaMediaVentas cmv = new ConsultaMediaVentas();
+                            }else{
+                                System.out.println("No existe el fichero.");
+                            }
                             break;
-
-                        case 6:
-
-
-                            break;
-
 
                     }
-                } catch (IOException e) {
-                    System.out.println("Dato no valido.");
+
+
                 } catch (XMLDBException e) {
-                    System.out.println("No puedo acceder a CrearCliente.");
+                    e.printStackTrace();
                 } catch (ParserConfigurationException e) {
                     e.printStackTrace();
                 }
 
-            } while (!(op > 0 && op < 18));
 
-        } while (op != 17);
+
+
+        } while (!(op > 0 && op < 18));
+
+    } while(op !=17);
 
         System.out.println("FIN");
-    }
+}
 
 
     private static void mostrarMenu() {
 
-        System.out.println("------------MENU------------- ");
+        System.out.println("----------------MENU----------------------");
+        System.out.println("1 - Clientes.");
+        System.out.println("2 - Vendedores.");
+        System.out.println("3 - Articulos.");
+        System.out.println("4 - Compra-venta.");
+        System.out.println("5 - Consulta: media de ventas.");
+
+
+       /*     System.out.println(
+                    "14. Crear Compra-Venta\n" +
+                        "15. Mostrar todas las compras hechas por cliente (Elegir Cliente) (Articulo-cantidad-Cliente - vendedor - total (cantidad * precio).\n" +
+                        "16. Media de las ventas por vendedor (elegir vendedor).\n" +
+                        "17. Media de ventas totales (sin interaccion con el usuario");*/
+    }
+
+    private static void menuClientes() {
         System.out.println(
-                "1. Crear Cliente.\n" +
+                " ---- CLIENTES----      \n" +
+                        "1. Crear Cliente.\n" +
                         "2. Modificar Cliente.\n" +
                         "3. Eliminar Cliente.\n" +
-                        "4. Listado Clientes.\n" +
-                       /* "5. Crear Vendedor.\n" +
-                        "6. Modificar Vendedor.\n" +
-                        "7. Eliminar Vendedor.\n" +
-                        "8. Listado Vendedor.\n" +
-                        "9. Crear Articulo.\n" +
-                        "10. Modificar Articulo.\n" +
-                        "11. Eliminar Articulo.\n" +
-                        "12. Listado Articulos.\n" +
-                        "13. Listado Vendedor.\n" +
-                        "14. Crear Compra-Venta\n" +
-                        "15. Mostrar todas las compras hechas por cliente (Elegir Cliente) (Articulo-cantidad-Cliente - vendedor - total (cantidad * precio).\n" +
-                        "16. Media de las ventas por vendedor (elegir vendedor).\n" +*/
-                        "17. Media de ventas totales (sin interaccion con el usuario");
+                        "4. Listado Clientes.\n");
+    }
+
+    private static void menusVendedores() {
+        System.out.println(
+                " ---- VENDEDORES ----     \n " +
+                        "1. Crear Vendedor.\n" +
+                        "2. Modificar Vendedor.\n" +
+                        "3. Eliminar Vendedor.\n" +
+                        "4. Listado Vendedor.\n");
+    }
+
+    private static void menuArticulos() {
+        System.out.println(
+                " ---- ARTICULOS----      \n" +
+                        "1. Crear Articulo.\n" +
+                        "2. Modificar Articulo.\n" +
+                        "3. Eliminar Articulo.\n" +
+                        "4. Listado Articulos.\n");
+    }
+
+    private static void menuCompraVenta() {
+        System.out.println(
+                " ---- COMPRA VENTA----      \n" +
+                        "1. Crear compra-venta.\n" +
+                        "2. Modificar compra-venta.\n" +
+                        "3. Eliminar compra-venta.\n" +
+                        "4. Listado compra-venta.\n");
     }
 
 }

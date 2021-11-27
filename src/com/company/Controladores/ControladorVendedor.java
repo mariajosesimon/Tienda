@@ -1,10 +1,8 @@
 package com.company.Controladores;
 
 
-import org.w3c.dom.Attr;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
@@ -24,26 +22,26 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 
-public class ControladorCliente {
+public class ControladorVendedor {
 
     BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
 
     /**
-     * <Clientes>
-     * <Cliente id=>
-     * <NombreCliente></NombreCliente>
-     * </Cliente>
-     * </Clientes>
+     * <Vendedores>
+     * <Vendedor id=>
+     * <NombreVendedor></NombreVendedor>
+     * </Vendedor>
+     * </Vendedores>
      */
 
-    public void CrearCliente(Collection col) throws XMLDBException, IOException, ParserConfigurationException {
+    public void CrearVendedor(Collection col) throws XMLDBException, IOException, ParserConfigurationException {
 
         //  Collection col = Conexion.conectar();
 
-        /* 1 - revisar si hay clientes y saber el ultimo id
-         * 2- solicitar el nombre del cliente
-         * 3- crear cliente( id + nombre)
+        /* 1 - revisar si hay vendedores y saber el ultimo id
+         * 2- solicitar el nombre del vendedor
+         * 3- crear vendedor( id + nombre)
          * */
 
         if (col != null) {  // Estamos conectados
@@ -54,15 +52,15 @@ public class ControladorCliente {
             XPathQueryService servicio;
             servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
 
-            //Consulta de mi ultimo id de cliente.
+            //Consulta de mi ultimo id de vendedor.
 
-            // /Clientes/Cliente[@id=last()]/concat(@id,\"\")
-            // /Clientes/Cliente[position()=last()]/concat(@id, "")
+            // /Vendedores/Vendedor[@id=last()]/concat(@id,\"\")
+            // /Vendedores/Vendedor[position()=last()]/concat(@id, "")
 
-            String consulta = "/Clientes/Cliente[position()=last()]/concat(@id, \"\")";
+            String consulta = "/Vendedores/Vendedor[position()=last()]/concat(@id, \"\")";
             ResourceSet result = servicio.query(consulta);
 
-            //   ResourceSet result= servicio.query("/Clientes/Cliente[@idCliente=last()]/NombreCliente");
+            //   ResourceSet result= servicio.query("/Vendedores/Vendedor[@idVendedor=last()]/NombreVendedor");
             // recorrer los datos del recurso.
             ResourceIterator i;
             i = result.getIterator();
@@ -86,26 +84,26 @@ public class ControladorCliente {
 
             //------------------- CREAR EL OBJETO PARA DAR DE ALTA EN LA BD.
 
-            System.out.println("Nombre del cliente: ");
-            String NombreCliente = br.readLine();
+            System.out.println("Nombre del vendedor: ");
+            String NombreVendedor = br.readLine();
 
-            File clientes = new File("Clientes.xml");
+            File vendedores = new File("Vendedores.xml");
             // nos aseguramos que se puede leer. Si no existe se debe crear.
 
-            if (!clientes.canRead()) {
+            if (!vendedores.canRead()) {
                 crearElemento(col);
             }
 
             //Generar el xml
-            String NuevoCliente = "<Cliente id=\"" + String.valueOf(ultimoId) + "\"><NombreCliente>" + NombreCliente + "</NombreCliente></Cliente>";
+            String NuevoVendedor = "<Vendedor id=\"" + String.valueOf(ultimoId) + "\"><NombreVendedor>" + NombreVendedor + "</NombreVendedor></Vendedor>";
 
             XPathQueryService servicio2;
             servicio2 = (XPathQueryService) col.getService("XPathQueryService", "1.0");
 
-            ResourceSet insertarCliente = servicio2.query("update insert " + NuevoCliente + " into /Clientes");
+            ResourceSet insertarVendedor = servicio2.query("update insert " + NuevoVendedor + " into /Vendedores");
 
             col.close();
-            System.out.println("Cliente insertado.");
+            System.out.println("Vendedor insertado.");
 
 
         }
@@ -113,18 +111,18 @@ public class ControladorCliente {
 
     }
 
-    public void ModificarCliente(Collection col) throws IOException, XMLDBException {
+    public void ModificarVendedor(Collection col) throws IOException, XMLDBException {
 
-        /* 1 - Mostrar todos los clientes
+        /* 1 - Mostrar todos los vendedores
          *  2 - Solicitar al usuario que nos indique que id desea modificar
          *  3 - Solo se puede modificar el nombre, así que solicito nombre nuevo*/
 
-        ListarClientes(col);
+        ListarVendedores(col);
 
-        System.out.println("Escribe el ID del cliente a modificar: ");
-        String clienteElegido = br.readLine();
+        System.out.println("Escribe el ID del vendedor a modificar: ");
+        String vendedorElegido = br.readLine();
 
-        boolean existe = Comprobacion(clienteElegido, col);
+        boolean existe = Comprobacion(vendedorElegido, col);
 
         if(existe){
 
@@ -133,52 +131,52 @@ public class ControladorCliente {
             XPathQueryService servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
 
             ResourceSet result = servicio.query(
-                    "update value /Clientes/Cliente[@id=" + clienteElegido + "]/NombreCliente with data('" + nombre +"') ");
+                    "update value /Vendedores/Vendedor[@id=" + vendedorElegido + "]/NombreVendedor with data('" + nombre +"') ");
 
             col.close();
-            System.out.println("Cliente actualizado.");
+            System.out.println("Vendedor actualizado.");
 
         }else{
-            System.out.println("No existe el cliente.");
+            System.out.println("No existe el vendedor.");
         }
 
     }
 
-    public void EliminarCliente(Collection col) throws IOException, XMLDBException {
-        /* 1 - Mostrar todos los clientes
+    public void EliminarVendedor(Collection col) throws IOException, XMLDBException {
+        /* 1 - Mostrar todos los vendedores
          *  2 - Solicitar al usuario que nos indique que id desea eliminar
          *  3 - comprobar si existe y si se puede eliminar, que no tenga relaciones*/
 
-        ListarClientes(col);
+        ListarVendedores(col);
 
-        System.out.println("Escribe el ID del cliente a eliminar: ");
-        String clienteElegido = br.readLine();
+        System.out.println("Escribe el ID del vendedor a eliminar: ");
+        String vendedorElegido = br.readLine();
 
-        boolean existe = Comprobacion(clienteElegido, col);
+        boolean existe = Comprobacion(vendedorElegido, col);
 
         if(existe){
 
             XPathQueryService servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
             //Consulta para borrar un departamento --> update delete
             ResourceSet result = servicio.query(
-                    "update delete /Clientes/Cliente[@id=" + clienteElegido + "]");
+                    "update delete /Vendedores/Vendedor[@id=" + vendedorElegido + "]");
             col.close();
-            System.out.println("Cliente  eliminado.");
+            System.out.println("Vendedor  eliminado.");
 
 
         }else{
-            System.out.println("No existe el cliente.");
+            System.out.println("No existe el vendedor.");
         }
 
     }
 
-    boolean Comprobacion(String cliente, Collection col) {
+    boolean Comprobacion(String vendedor, Collection col) {
 
         boolean resultado=false;
         try {
             XPathQueryService servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
             //Consulta para consultar la información de un departamento
-            ResourceSet result = servicio.query("/Clientes/Cliente[@id=" + cliente + "]");
+            ResourceSet result = servicio.query("/Vendedores/Vendedor[@id=" + vendedor + "]");
             ResourceIterator i;
             i = result.getIterator();
             col.close();
@@ -196,13 +194,13 @@ public class ControladorCliente {
 
     }
 
-    public void ListarClientes(Collection col) {
+    public void ListarVendedores(Collection col) {
 
         try {
             XPathQueryService servicio;
             servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
             //Preparamos la consulta
-            ResourceSet result = servicio.query("for $cli in /Clientes/Cliente/concat(@id, \" - \", NombreCliente) return $cli");
+            ResourceSet result = servicio.query("for $cli in /Vendedores/Vendedor/concat(@id, \" - \", NombreVendedor) return $cli");
             // recorrer los datos del recurso.
             ResourceIterator i;
             i = result.getIterator();
@@ -233,10 +231,10 @@ public class ControladorCliente {
             // Creamos el recurso -> recibe 2 parámetros tipo String:
             // s: nombre.xml (si lo dejamos null, pondrá un nombre aleatorio)
             // s1: tipo recurso (en este caso, siempre será XMLResource)
-            res = (XMLResource) col.createResource("Clientes.xml", "XMLResource");
+            res = (XMLResource) col.createResource("Vendedores.xml", "XMLResource");
 
             // Elegimos el fichero .xml que queremos añadir a la colección
-            File f = new File("Clientes.xml");
+            File f = new File("Vendedores.xml");
 
             crearFicheroXML(f);
             // Fijamos como contenido ese archivo .xml elegido
@@ -258,7 +256,7 @@ public class ControladorCliente {
         DOMImplementation implementation = docBuilder.getDOMImplementation();
 
         //Elemento raíz
-        Document dcliente = implementation.createDocument(null, "Clientes", null);
+        Document dvendedor = implementation.createDocument(null, "Vendedores", null);
         ;
         //Se escribe el contenido del XML en un archivo
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -269,7 +267,7 @@ public class ControladorCliente {
                 TransformerConfigurationException e) {
             e.printStackTrace();
         }
-        DOMSource source = new DOMSource(dcliente);
+        DOMSource source = new DOMSource(dvendedor);
         StreamResult result = new StreamResult(f);
         try {
             transformer.transform(source, result);
