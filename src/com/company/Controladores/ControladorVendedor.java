@@ -124,19 +124,19 @@ public class ControladorVendedor {
 
         boolean existe = Comprobacion(vendedorElegido, col);
 
-        if(existe){
+        if (existe) {
 
             System.out.println("Escribe el nombre de nuevo: ");
             String nombre = br.readLine();
             XPathQueryService servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
 
             ResourceSet result = servicio.query(
-                    "update value /Vendedores/Vendedor[@id=" + vendedorElegido + "]/NombreVendedor with data('" + nombre +"') ");
+                    "update value /Vendedores/Vendedor[@id=" + vendedorElegido + "]/NombreVendedor with data('" + nombre + "') ");
 
             col.close();
             System.out.println("Vendedor actualizado.");
 
-        }else{
+        } else {
             System.out.println("No existe el vendedor.");
         }
 
@@ -149,13 +149,13 @@ public class ControladorVendedor {
 
         ListarVendedores(col);
 
-        System.out.println("Escribe el ID del vendedor a eliminar: ");
-        String vendedorElegido = br.readLine();
+        boolean existe = false;
 
-        boolean existe = Comprobacion(vendedorElegido, col);
+        do {
+            System.out.println("Escribe el ID del vendedor a eliminar: ");
+            String vendedorElegido = br.readLine();
 
-        if(existe){
-
+            existe = Comprobacion(vendedorElegido, col);
             XPathQueryService servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
             //Consulta para borrar un departamento --> update delete
             ResourceSet result = servicio.query(
@@ -163,16 +163,13 @@ public class ControladorVendedor {
             col.close();
             System.out.println("Vendedor  eliminado.");
 
-
-        }else{
-            System.out.println("No existe el vendedor.");
-        }
+        } while (!existe);
 
     }
 
     boolean Comprobacion(String vendedor, Collection col) {
 
-        boolean resultado=false;
+        boolean resultado = false;
         try {
             XPathQueryService servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
             //Consulta para consultar la información de un departamento
@@ -181,9 +178,9 @@ public class ControladorVendedor {
             i = result.getIterator();
             col.close();
             if (!i.hasMoreResources()) {
-                resultado =  false;
+                resultado = false;
             } else {
-                resultado =  true;
+                resultado = true;
             }
         } catch (Exception e) {
             System.out.println("Error al consultar.");

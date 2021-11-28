@@ -15,7 +15,6 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.util.ArrayList;
 
-import static java.lang.Float.parseFloat;
 
 public class CompraVenta {
     BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -264,7 +263,6 @@ public class CompraVenta {
 
                         String nombreClienteNuevo = ExtraerNombre(col, nuevoCliente, "/Clientes/Cliente[@id=", "]/NombreCliente/text()");
 
-
                         ResourceSet resultCambioCliente = servicio.query(
                                 "update value /CompraVenta/Venta[@id=\"" + compraVentaElegida + "\"]/Cliente with data('" + nombreClienteNuevo + "') ");
 
@@ -291,14 +289,12 @@ public class CompraVenta {
         ListarCompraVenta(col);
 
         String compraVentaElegida = "";
+        boolean existe = false;
 
-        System.out.println("Cual compra-venta quieres eliminar (IDVenta):");
-        compraVentaElegida = br.readLine();
-
-
-        boolean existe = Comprobacion2(compraVentaElegida, col, "/CompraVenta/Venta");
-
-        if (existe) {
+        do {
+            System.out.println("Cual compra-venta quieres eliminar (IDVenta):");
+            compraVentaElegida = br.readLine();
+            existe = Comprobacion2(compraVentaElegida, col, "/CompraVenta/Venta");
 
             XPathQueryService servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
             //Consulta para borrar un departamento --> update delete
@@ -307,10 +303,7 @@ public class CompraVenta {
             col.close();
             System.out.println("Compra-Venta  eliminada.");
 
-
-        } else {
-            System.out.println("No existe la compra venta elegida.");
-        }
+        } while (!existe);
 
 
     }

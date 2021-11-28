@@ -1,6 +1,8 @@
 package com.company;
 
-import com.company.ConsultasSinInteraccion.ConsultaMediaVentas;
+import com.company.ConsultasConInteraccion.TotalComprasPorArticulo;
+import com.company.ConsultasSinInteraccion.ConsultaArticulosMasVendidos;
+import com.company.ConsultasSinInteraccion.ConsultaVentasPorVendedor;
 import com.company.Controladores.*;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.*;
@@ -9,7 +11,6 @@ import org.xmldb.api.modules.XPathQueryService;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -158,13 +159,16 @@ public class Main {
                             }
                             break;
                         case 5:
-
-                            File total = new File("Totales.dat");
-                            if(total.exists()) {
-                                ConsultaMediaVentas cmv = new ConsultaMediaVentas();
-                            }else{
-                                System.out.println("No existe el fichero.");
-                            }
+                            TotalComprasPorArticulo tcXa = new TotalComprasPorArticulo();
+                            tcXa.MostrarTotalComprasxArticulo(col);
+                            break;
+                        case 6:
+                            ConsultaVentasPorVendedor cVV = new ConsultaVentasPorVendedor();
+                            cVV.Ventas(col);
+                            break;
+                        case 7:
+                            ConsultaArticulosMasVendidos consultaArticulosMasVendidos = new ConsultaArticulosMasVendidos();
+                            consultaArticulosMasVendidos.ArticuloMasVendido(col);
                             break;
 
                     }
@@ -196,8 +200,9 @@ public class Main {
         System.out.println("2 - Vendedores.");
         System.out.println("3 - Articulos.");
         System.out.println("4 - Compra-venta.");
-        System.out.println("5 - Consulta: media de ventas.");
-
+        System.out.println("5 - Consulta: Total Compras por articulo.");
+        System.out.println("6 - Consulta: Total Ventas por vendedor.");
+        System.out.println("7 - Consulta: Articulo mas y menos vendido.");
 
        /*     System.out.println(
                     "14. Crear Compra-Venta\n" +

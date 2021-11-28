@@ -1,14 +1,10 @@
 package com.company.Controladores;
 
-
-import org.w3c.dom.Attr;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -151,24 +147,22 @@ public class ControladorCliente {
 
         ListarClientes(col);
 
-        System.out.println("Escribe el ID del cliente a eliminar: ");
-        String clienteElegido = br.readLine();
+        boolean existe = false;
 
-        boolean existe = Comprobacion(clienteElegido, col);
+       do {
 
-        if(existe){
+           System.out.println("Escribe el ID del cliente a eliminar: ");
+           String clienteElegido = br.readLine();
+           existe = Comprobacion(clienteElegido, col);
+           XPathQueryService servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
+           //Consulta para borrar un departamento --> update delete
+           ResourceSet result = servicio.query(
+                   "update delete /Clientes/Cliente[@id=" + clienteElegido + "]");
+           col.close();
+           System.out.println("Cliente  eliminado.");
 
-            XPathQueryService servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
-            //Consulta para borrar un departamento --> update delete
-            ResourceSet result = servicio.query(
-                    "update delete /Clientes/Cliente[@id=" + clienteElegido + "]");
-            col.close();
-            System.out.println("Cliente  eliminado.");
 
-
-        }else{
-            System.out.println("No existe el cliente.");
-        }
+       }while(!existe);
 
     }
 

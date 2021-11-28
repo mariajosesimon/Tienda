@@ -179,7 +179,7 @@ public class ControladorArticulo {
 
     }
 
-    boolean Comprobacion(String articulo, Collection col) {
+    public boolean Comprobacion(String articulo, Collection col) {
 
         boolean resultado = false;
         try {
