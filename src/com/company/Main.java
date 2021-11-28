@@ -2,6 +2,7 @@ package com.company;
 
 import com.company.ConsultasSinInteraccion.ConsultaMediaVentas;
 import com.company.Controladores.*;
+import org.xml.sax.SAXException;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.XPathQueryService;
 
@@ -174,6 +175,8 @@ public class Main {
                 } catch (ParserConfigurationException e) {
                     e.printStackTrace();
                 } catch (TransformerException e) {
+                    e.printStackTrace();
+                } catch (SAXException e) {
                     e.printStackTrace();
                 }
 

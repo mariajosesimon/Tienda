@@ -106,7 +106,7 @@ public class ControladorArticulo {
             }
 
             //Generar el xml
-            String NuevoArticulo = "<Articulo id=\"" + String.valueOf(ultimoId) + "\"><NombreArticulo>" + NombreArticulo + "</NombreArticulo><Precio>" + precio+ "</Precio></Articulo>";
+            String NuevoArticulo = "<Articulo id=\"" + String.valueOf(ultimoId) + "\"><NombreArticulo>" + NombreArticulo + "</NombreArticulo><Precio>" + precio + "</Precio></Articulo>";
 
             XPathQueryService servicio2;
             servicio2 = (XPathQueryService) col.getService("XPathQueryService", "1.0");
@@ -159,14 +159,14 @@ public class ControladorArticulo {
          *  3 - comprobar si existe y si se puede eliminar, que no tenga relaciones*/
 
         ListarArticulos(col);
+        boolean existe = false;
 
-        System.out.println("Escribe el ID del articulo a eliminar: ");
-        String articuloElegido = br.readLine();
 
-        boolean existe = Comprobacion(articuloElegido, col);
+       do {
+            System.out.println("Escribe el ID del articulo a eliminar: ");
+            String articuloElegido = br.readLine();
 
-        if (existe) {
-
+            existe = Comprobacion(articuloElegido, col);
             XPathQueryService servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
             //Consulta para borrar un departamento --> update delete
             ResourceSet result = servicio.query(
@@ -175,9 +175,7 @@ public class ControladorArticulo {
             System.out.println("Articulo  eliminado.");
 
 
-        } else {
-            System.out.println("No existe el articulo.");
-        }
+        } while(!existe);
 
     }
 
