@@ -68,10 +68,10 @@ public class ControladorVendedor {
             while (i.hasMoreResources()) {
                 Resource r = i.nextResource();
                 String resultado = r.getContent().toString();
-                System.out.println(resultado);
+                // System.out.println(resultado);
                 if (!(resultado.equals(""))) {
                     ultimoId = Integer.parseInt(resultado);
-                    System.out.println(ultimoId);
+                    // System.out.println(ultimoId);
                     ultimoId++;
 
                 } else {
@@ -80,7 +80,7 @@ public class ControladorVendedor {
                 System.out.println("--------------------------------------------");
             }
 
-            System.out.println(ultimoId);
+            // System.out.println(ultimoId);
 
             //------------------- CREAR EL OBJETO PARA DAR DE ALTA EN LA BD.
 
@@ -262,7 +262,7 @@ public class ControladorVendedor {
             transformer = transformerFactory.newTransformer();
         } catch (
                 TransformerConfigurationException e) {
-            e.printStackTrace();
+            System.out.println("Problemas en la configuracion");
         }
         DOMSource source = new DOMSource(dvendedor);
         StreamResult result = new StreamResult(f);
@@ -270,7 +270,7 @@ public class ControladorVendedor {
             transformer.transform(source, result);
         } catch (
                 TransformerException e) {
-            e.printStackTrace();
+            System.out.println("Problemas al generar tu xml");
         }
     }
 

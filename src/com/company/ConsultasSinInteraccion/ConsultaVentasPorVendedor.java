@@ -1,7 +1,6 @@
 package com.company.ConsultasSinInteraccion;
 
 
-
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.XPathQueryService;
 
@@ -35,18 +34,19 @@ public class ConsultaVentasPorVendedor {
         //Mostrar por pantalla desde el archivo .dat
 
         DataInputStream fin = new DataInputStream(new FileInputStream("Ventas.dat"));
-        try{
+        try {
             System.out.println("TOTAL VENTAS POR VENDEDOR");
-            while (true){
+            while (true) {
                 String venta = fin.readUTF();
                 System.out.println(venta);
             }
 
-        }catch(EOFException e){
+        } catch (EOFException e) {
             System.out.println("fin de lectura");
         }
+        fin.close();
 
-
+        col.close();
 
     }
 

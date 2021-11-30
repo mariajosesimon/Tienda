@@ -10,7 +10,7 @@ import java.io.InputStreamReader;
 
 public class TotalComprasPorArticulo {
 
-    /* solicitar al usuario que un articulo - mostrarlistado de articulos
+    /* solicitar al usuario que elija un articulo - mostrarlistado de articulos
     y mostrar los totales de ese articulo vendido,
     hay que coger el campo de cantidad.
     Mostrar todas las compras (<unidadesArticulos>)
@@ -50,6 +50,7 @@ public class TotalComprasPorArticulo {
             System.out.println("Se han vendido: " + resultado);
         }
 
+        col.close();
 
     }
 }

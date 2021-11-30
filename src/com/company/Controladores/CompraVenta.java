@@ -61,13 +61,10 @@ public class CompraVenta {
             clienteElegido = br.readLine();
             existeCliente = cCliente.Comprobacion(clienteElegido, col);
         } while (!existeCliente);
-
         // Consulta para extraer solo el nombre  /Clientes/Cliente[@id=4]/NombreCliente/text()
-
         String nombreCliente = ExtraerNombre(col, clienteElegido, "/Clientes/Cliente[@id=", "]/NombreCliente/text()");
 
         //*************************** VENDEDOR ************************************
-
         String vendedorElegido = "";
         boolean existeVendedor = false;
         do {
@@ -78,9 +75,7 @@ public class CompraVenta {
             vendedorElegido = br.readLine();
             existeVendedor = cVendedor.Comprobacion(vendedorElegido, col);
         } while (!existeVendedor);
-
         String nombreVendedor = ExtraerNombre(col, vendedorElegido, "/Vendedores/Vendedor[@id=", "]/NombreVendedor/text()");
-
 
         //*************************** COMPRA ************************************
         /* 5- Mostrar articulos
@@ -136,8 +131,7 @@ public class CompraVenta {
 
         } while (continuar);
 
-
-        //----------------- SABER ULTIMO ID.-----------------------
+        //*************************** SABER ULTIMO ID.************************************
 
         int ultimoId = -1;
 
@@ -178,8 +172,15 @@ public class CompraVenta {
             crearElemento(col);
         }
 
-        //Generar el xml
+        //************************************ GENERAR XML ************************************
 
+        //La <compra> tiene varios nodos, y necesito crear un string para añadir a la compraventa. Puedo tener varios ProductoUnidades
+        /*  <Compra>
+         * <ProductoUnidades total = "precio*unidades">
+         * <Articulo>nombre</Articulo>
+         * <Cantidad>unidades</Cantidad>
+         * </ProductoUnidades>
+         * </Compra>*/
         String cadenaCompra = lecturaCompra(compra, col);
 
         File compraVentas = new File("CompraVenta.xml");
@@ -189,12 +190,12 @@ public class CompraVenta {
             crearElemento(col);
         }
 
+        //************************************ AÑADIR LA COMPRA VENTA A LA BD EXISTS ***********************************
+
         String NuevaCompraVenta = "<Venta id=\"" + String.valueOf(ultimoId) + "\"><Cliente>" + nombreCliente + "</Cliente><Vendedor>" + nombreVendedor + "</Vendedor><Compra>" + cadenaCompra + "</Compra></Venta>";
         XPathQueryService servicioCompraVenta;
         servicioCompraVenta = (XPathQueryService) col.getService("XPathQueryService", "1.0");
-
         ResourceSet insertarCompraVenta = servicioCompraVenta.query("update insert " + NuevaCompraVenta + " into /CompraVenta");
-
         //Generar fichero xml por si quisieramos exportarlo.
         generarFicheroXMLCompraVenta(col);
         col.close();
@@ -214,74 +215,53 @@ public class CompraVenta {
 
         if (existe) {
 
-            System.out.println("Que elemento deseas modificar? ");
-            System.out.println("1. Cliente");
-            System.out.println("2. Vendedor");
-            System.out.println("3. Articulo");
-            System.out.println("4. Unidades");
+            //Cliente - modificar.
+            /*1- Mostrar los clientes disponibles distintos al que aparece en la compra-venta*/
 
-            int op = Integer.parseInt(br.readLine());
-            do {
-
-                switch (op) {
-                    case 1:
-                        //Cliente - modificar.
-                        /*1- Mostrar los clientes disponibles distintos al que aparece en la compra-venta*/
-
-                        //Consulta tipo:
+            //Consulta tipo:
                       /*  for $cli in /Clientes/Cliente
                         let $nombre := $cli/NombreCliente/text()
                         let $id:= $cli/@id
                         return if ($nombre != /CompraVenta/Venta[@id="9"]/Cliente/text()) then concat($id," " ,$nombre) else "" */
 
-                        String consulta = "for $cli in /Clientes/Cliente\n" +
-                                " let $nombre := $cli/NombreCliente/text()\n" +
-                                " let $id:= $cli/@id\n" +
-                                " return if ($nombre != /CompraVenta/Venta[@id=\"" + compraVentaElegida + "\"]/Cliente/text()) then concat($id,\" \" ,$nombre) else \"\"";
-                        XPathQueryService servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
-                        ResourceSet result = servicio.query(consulta);
-                        ResourceIterator i;
-                        i = result.getIterator();
-                        if (!i.hasMoreResources()) {
-                            System.out.println(" LA CONSULTA NO DEVUELVE NADA O ESTÁ MAL ESCRITA");
-                        }
-                        System.out.println("CLIENTES DISPONIBLES");
-                        System.out.println("ID -   NOMBRE   ");
-                        while (i.hasMoreResources()) {
-                            Resource r = i.nextResource();
-                            System.out.println((String) r.getContent());
-                        }
+            String consulta = "for $cli in /Clientes/Cliente\n" +
+                    " let $nombre := $cli/NombreCliente/text()\n" +
+                    " let $id:= $cli/@id\n" +
+                    " return if ($nombre != /CompraVenta/Venta[@id=\"" + compraVentaElegida + "\"]/Cliente/text()) then concat($id,\" \" ,$nombre) else \"\"";
+            XPathQueryService servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
+            ResourceSet result = servicio.query(consulta);
+            ResourceIterator i;
+            i = result.getIterator();
+            if (!i.hasMoreResources()) {
+                System.out.println(" LA CONSULTA NO DEVUELVE NADA O ESTÁ MAL ESCRITA");
+            }
+            System.out.println("CLIENTES DISPONIBLES");
+            System.out.println("ID -   NOMBRE   ");
+            while (i.hasMoreResources()) {
+                Resource r = i.nextResource();
+                System.out.println((String) r.getContent());
+            }
 
-                        boolean existeCliente = false;
-                        String nuevoCliente = "";
-                        do {
-                            /*2- Elegir un nuevo cliente*/
-                            nuevoCliente = br.readLine();
-                            /* 3- comprobar que el cliente elegido está en la lista.*/
-                            existeCliente = Comprobacion2(nuevoCliente, col, "/Clientes/Cliente");
-                        } while (!existeCliente);
+            //**********************  ELECCION DEL NUEVO CLIENTE Y COMPROBACION QUE EXISTE. ****************************
+            boolean existeCliente = false;
+            String nuevoCliente = "";
+            do {
+                /*2- Elegir un nuevo cliente*/
+                nuevoCliente = br.readLine();
+                /* 3- comprobar que el cliente elegido está en la lista.*/
+                existeCliente = Comprobacion2(nuevoCliente, col, "/Clientes/Cliente");
+            } while (!existeCliente);
 
-                        String nombreClienteNuevo = ExtraerNombre(col, nuevoCliente, "/Clientes/Cliente[@id=", "]/NombreCliente/text()");
+            String nombreClienteNuevo = ExtraerNombre(col, nuevoCliente, "/Clientes/Cliente[@id=", "]/NombreCliente/text()");
 
-                        ResourceSet resultCambioCliente = servicio.query(
-                                "update value /CompraVenta/Venta[@id=\"" + compraVentaElegida + "\"]/Cliente with data('" + nombreClienteNuevo + "') ");
+            //*************************** CAMBIO EN LA BD EL CLIENTE ********** UPDATE ***************
+            ResourceSet resultCambioCliente = servicio.query(
+                    "update value /CompraVenta/Venta[@id=\"" + compraVentaElegida + "\"]/Cliente with data('" + nombreClienteNuevo + "') ");
 
-                        col.close();
-                        System.out.println("CompraVenta actualizada.");
-
-                        break;
-                    case 2:
-                        break;
-                    case 3:
-                        break;
-                    case 4:
-                        break;
-                }
-
-            } while (!(op > 0 && op < 5));
+            col.close();
+            System.out.println("CompraVenta actualizada.");
 
         }
-
 
     }
 
@@ -294,12 +274,37 @@ public class CompraVenta {
         do {
             System.out.println("Cual compra-venta quieres eliminar (IDVenta):");
             compraVentaElegida = br.readLine();
-            existe = Comprobacion2(compraVentaElegida, col, "/CompraVenta/Venta");
+            existe = Comprobacion2(compraVentaElegida, col, "/CompraVenta/Venta"); // comprobamos que existe la compra venta seleccionada.
 
             XPathQueryService servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
-            //Consulta para borrar un departamento --> update delete
+            //Consulta para borrar una compra venta --> update delete
+
+            // Consulta --> /CompraVenta/Venta[@id="4"]/Compra/ProductoUnidades/concat(@total,())
+            /*Al eliminar de la compraventa hay que restar el total que teniamos de la compra venta en el archivo .dat
+             * Este archivo .dat lo utilizamos para una consulta de totales.
+             * */
+
+            DataOutputStream ventasTotales = new DataOutputStream(new FileOutputStream("VentasTotales.dat", true));
+            String eliminar = "/CompraVenta/Venta[@id=\"" + compraVentaElegida + "\"]/Compra/ProductoUnidades/concat(@total,())";
+            System.out.println(eliminar);
+            ResourceSet eliminarDatos = servicio.query(eliminar);
+            ResourceIterator i;
+            i = eliminarDatos.getIterator();
+            float suma = 0;
+
+            while (i.hasMoreResources()) {
+                Resource r = i.nextResource();
+                //System.out.println((String) r.getContent());
+                suma = (float) Double.parseDouble((String) r.getContent()) + suma;
+            }
+
+            ventasTotales.writeFloat(-suma);
+            ventasTotales.close();
+
+            //Aqui elimino el elemento de la lista de compra venta.
             ResourceSet result = servicio.query(
                     "update delete /CompraVenta/Venta[@id=" + compraVentaElegida + "]");
+
             col.close();
             System.out.println("Compra-Venta  eliminada.");
 
@@ -312,7 +317,7 @@ public class CompraVenta {
 
         generarFicheroXMLCompraVenta(col);
 
-        /*Reutilizacion del codigo de la practica anterior*/
+        /*Reutilizacion del codigo de la practica anterior. Tengo un xml y desde este xml muestro los datos. */
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -343,10 +348,7 @@ public class CompraVenta {
                 /*Aqui tenemos que recorrer cada venta para ver cuantos productos-unidades ha comprado y mostrar todas. */
                 Element nProductoUnidades = (Element) nUnaVenta;
                 nProductoUnidades.getElementsByTagName("ProductoUnidades");
-
                 NodeList lista = nProductoUnidades.getElementsByTagName("ProductoUnidades");
-
-
                 for (int j = 0; j < lista.getLength(); j++) {
                     Node unaCompra = lista.item(j);
                     Element compra = (Element) unaCompra;
@@ -380,7 +382,7 @@ public class CompraVenta {
          * </ProductoUnidades>  */
 
 
-        float total;
+        float total = 0;
 
         String cadenaDevolver = "";
 
@@ -388,11 +390,14 @@ public class CompraVenta {
         // /Articulos/Articulo[NombreArticulo="Sacapuntas"]/Precio/text()
         String resultado = "";
         double price;
+        DataOutputStream ventasTotales = new DataOutputStream(new FileOutputStream("VentasTotales.dat", true));
+
         for (Compra c : compra) {
             XPathQueryService sPrecio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
             ResourceSet resultadoPrecio = sPrecio.query("/Articulos/Articulo[NombreArticulo=\"" + c.getNombreArticulo() + "\"]/Precio/text()");
             System.out.println(c.getNombreArticulo());
             ResourceIterator i = resultadoPrecio.getIterator();
+
             while (i.hasMoreResources()) {
                 Resource r = i.nextResource();
                 resultado = r.getContent().toString();
@@ -401,15 +406,20 @@ public class CompraVenta {
             total = (float) (c.getCantidad() * price);  // calculamos el total de unidades comprada por el precio del articulo
 
             String cadena = "<ProductoUnidades total=\"" + total + "\"><Articulo>" + c.getNombreArticulo() + "</Articulo><Cantidad>" + c.getCantidad() + "</Cantidad></ProductoUnidades>";
-
+            ventasTotales.writeFloat(total);
             cadenaDevolver = cadenaDevolver.concat(cadena);
         }
-        return cadenaDevolver;
 
+        /*Genero un .dat con el total de las compras*/
+
+        ventasTotales.close();
+        return cadenaDevolver;
 
     }
 
     void crearElemento(Collection col) {
+
+        //Crea el elemento en la coleccion si no existe
         try {
 
             // Inicializamos el recurso
@@ -487,30 +497,6 @@ public class CompraVenta {
         transformer.transform(source, fichero);
 */
     }
-
-    /*boolean Comprobacion(String compraventa, Collection col) {
-
-        boolean resultado = false;
-        try {
-            XPathQueryService servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
-            //Consulta para consultar la información de un departamento
-            ResourceSet result = servicio.query("/CompraVenta/Venta[@id=" + compraventa + "]");
-            ResourceIterator i;
-            i = result.getIterator();
-            col.close();
-            if (!i.hasMoreResources()) {
-                resultado = false;
-            } else {
-                resultado = true;
-            }
-        } catch (Exception e) {
-            System.out.println("Error al consultar.");
-
-        }
-
-        return resultado;
-
-    }*/
 
     boolean Comprobacion2(String modificacion, Collection col, String cadena) {
 

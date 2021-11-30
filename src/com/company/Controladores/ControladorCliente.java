@@ -5,6 +5,7 @@ import org.w3c.dom.Document;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -66,10 +67,10 @@ public class ControladorCliente {
             while (i.hasMoreResources()) {
                 Resource r = i.nextResource();
                 String resultado = r.getContent().toString();
-                System.out.println(resultado);
+                // System.out.println(resultado);
                 if (!(resultado.equals(""))) {
                     ultimoId = Integer.parseInt(resultado);
-                    System.out.println(ultimoId);
+                    //   System.out.println(ultimoId);
                     ultimoId++;
 
                 } else {
@@ -78,7 +79,7 @@ public class ControladorCliente {
                 System.out.println("--------------------------------------------");
             }
 
-            System.out.println(ultimoId);
+            // System.out.println(ultimoId);
 
             //------------------- CREAR EL OBJETO PARA DAR DE ALTA EN LA BD.
 
@@ -117,26 +118,25 @@ public class ControladorCliente {
 
         ListarClientes(col);
 
-        System.out.println("Escribe el ID del cliente a modificar: ");
-        String clienteElegido = br.readLine();
+        boolean existe = false;
 
-        boolean existe = Comprobacion(clienteElegido, col);
+        do {
+            System.out.println("Escribe el ID del cliente a modificar: ");
+            String clienteElegido = br.readLine();
 
-        if(existe){
+            existe = Comprobacion(clienteElegido, col);
 
             System.out.println("Escribe el nombre de nuevo: ");
             String nombre = br.readLine();
             XPathQueryService servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
 
             ResourceSet result = servicio.query(
-                    "update value /Clientes/Cliente[@id=" + clienteElegido + "]/NombreCliente with data('" + nombre +"') ");
+                    "update value /Clientes/Cliente[@id=" + clienteElegido + "]/NombreCliente with data('" + nombre + "') ");
 
             col.close();
             System.out.println("Cliente actualizado.");
 
-        }else{
-            System.out.println("No existe el cliente.");
-        }
+        } while (!existe);
 
     }
 
@@ -149,37 +149,37 @@ public class ControladorCliente {
 
         boolean existe = false;
 
-       do {
+        do {
 
-           System.out.println("Escribe el ID del cliente a eliminar: ");
-           String clienteElegido = br.readLine();
-           existe = Comprobacion(clienteElegido, col);
-           XPathQueryService servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
-           //Consulta para borrar un departamento --> update delete
-           ResourceSet result = servicio.query(
-                   "update delete /Clientes/Cliente[@id=" + clienteElegido + "]");
-           col.close();
-           System.out.println("Cliente  eliminado.");
+            System.out.println("Escribe el ID del cliente a eliminar: ");
+            String clienteElegido = br.readLine();
+            existe = Comprobacion(clienteElegido, col);
+            XPathQueryService servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
+            //Consulta para borrar un departamento --> update delete
+            ResourceSet result = servicio.query(
+                    "update delete /Clientes/Cliente[@id=" + clienteElegido + "]");
+            col.close();
+            System.out.println("Cliente  eliminado.");
 
 
-       }while(!existe);
+        } while (!existe);
 
     }
 
-    boolean Comprobacion(String cliente, Collection col) {
+    public boolean Comprobacion(String cliente, Collection col) {
 
-        boolean resultado=false;
+        boolean resultado = false;
         try {
             XPathQueryService servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
-            //Consulta para consultar la información de un departamento
+            //Consulta para consultar la información de un cliente
             ResourceSet result = servicio.query("/Clientes/Cliente[@id=" + cliente + "]");
             ResourceIterator i;
             i = result.getIterator();
             col.close();
             if (!i.hasMoreResources()) {
-                resultado =  false;
+                resultado = false;
             } else {
-                resultado =  true;
+                resultado = true;
             }
         } catch (Exception e) {
             System.out.println("Error al consultar.");
@@ -261,7 +261,7 @@ public class ControladorCliente {
             transformer = transformerFactory.newTransformer();
         } catch (
                 TransformerConfigurationException e) {
-            e.printStackTrace();
+            System.out.println("Problemas en la configuracion");
         }
         DOMSource source = new DOMSource(dcliente);
         StreamResult result = new StreamResult(f);
@@ -269,7 +269,7 @@ public class ControladorCliente {
             transformer.transform(source, result);
         } catch (
                 TransformerException e) {
-            e.printStackTrace();
+            System.out.println("Problemas al generar tu xml");
         }
     }
 

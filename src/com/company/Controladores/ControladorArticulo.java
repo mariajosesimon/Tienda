@@ -26,7 +26,6 @@ public class ControladorArticulo {
 
     BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-
     /**
      * <Articulos>
      * <Articulo id=>
@@ -69,10 +68,10 @@ public class ControladorArticulo {
             while (i.hasMoreResources()) {
                 Resource r = i.nextResource();
                 String resultado = r.getContent().toString();
-                System.out.println(resultado);
+                // System.out.println(resultado);
                 if (!(resultado.equals(""))) {
                     ultimoId = Integer.parseInt(resultado);
-                    System.out.println(ultimoId);
+                    //  System.out.println(ultimoId);
                     ultimoId++;
 
                 } else {
@@ -81,22 +80,22 @@ public class ControladorArticulo {
                 System.out.println("--------------------------------------------");
             }
 
-            System.out.println(ultimoId);
+            // System.out.println(ultimoId);
 
             //------------------- CREAR EL OBJETO PARA DAR DE ALTA EN LA BD.
 
             System.out.println("Nombre del articulo: ");
             String NombreArticulo = br.readLine();
-            double precio =  0.2;
+            float precio = 0;
             do {
                 try {
                     System.out.println("Precio del articulo: ");
-                    precio = Double.parseDouble(br.readLine());
+                    precio = (float) Double.parseDouble(br.readLine());
                 } catch (NumberFormatException n) {
                     System.out.println("Dato no valido");
 
                 }
-            } while (precio < 0.0);
+            } while (precio < 0);
 
             File articulos = new File("Articulos.xml");
             // nos aseguramos que se puede leer. Si no existe se debe crear.
@@ -107,19 +106,13 @@ public class ControladorArticulo {
 
             //Generar el xml
             String NuevoArticulo = "<Articulo id=\"" + String.valueOf(ultimoId) + "\"><NombreArticulo>" + NombreArticulo + "</NombreArticulo><Precio>" + precio + "</Precio></Articulo>";
-
             XPathQueryService servicio2;
             servicio2 = (XPathQueryService) col.getService("XPathQueryService", "1.0");
-
             ResourceSet insertarArticulo = servicio2.query("update insert " + NuevoArticulo + " into /Articulos");
-
             col.close();
             System.out.println("Articulo insertado.");
 
-
         }
-
-
     }
 
     public void ModificarArticulo(Collection col) throws IOException, XMLDBException {
@@ -135,7 +128,7 @@ public class ControladorArticulo {
 
         boolean existe = Comprobacion(articuloElegido, col);
 
-        if (existe) {
+        do {
 
             System.out.println("Escribe el nombre de nuevo: ");
             String nombre = br.readLine();
@@ -147,9 +140,7 @@ public class ControladorArticulo {
             col.close();
             System.out.println("Articulo actualizado.");
 
-        } else {
-            System.out.println("No existe el articulo.");
-        }
+        } while (!existe);
 
     }
 
@@ -161,11 +152,9 @@ public class ControladorArticulo {
         ListarArticulos(col);
         boolean existe = false;
 
-
-       do {
+        do {
             System.out.println("Escribe el ID del articulo a eliminar: ");
             String articuloElegido = br.readLine();
-
             existe = Comprobacion(articuloElegido, col);
             XPathQueryService servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
             //Consulta para borrar un departamento --> update delete
@@ -173,33 +162,7 @@ public class ControladorArticulo {
                     "update delete /Articulos/Articulo[@id=" + articuloElegido + "]");
             col.close();
             System.out.println("Articulo  eliminado.");
-
-
-        } while(!existe);
-
-    }
-
-    public boolean Comprobacion(String articulo, Collection col) {
-
-        boolean resultado = false;
-        try {
-            XPathQueryService servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
-            //Consulta para consultar la información de un departamento
-            ResourceSet result = servicio.query("/Articulos/Articulo[@id=" + articulo + "]");
-            ResourceIterator i;
-            i = result.getIterator();
-            col.close();
-            if (!i.hasMoreResources()) {
-                resultado = false;
-            } else {
-                resultado = true;
-            }
-        } catch (Exception e) {
-            System.out.println("Error al consultar.");
-
-        }
-
-        return resultado;
+        } while (!existe);
 
     }
 
@@ -209,7 +172,7 @@ public class ControladorArticulo {
             XPathQueryService servicio;
             servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
             //Preparamos la consulta
-            ResourceSet result = servicio.query("for $cli in /Articulos/Articulo/concat(@id, \" - \", NombreArticulo) return $cli");
+            ResourceSet result = servicio.query("for $cli in /Articulos/Articulo/concat(@id, \" - \", NombreArticulo,  \" - \", Precio) return $cli");
             // recorrer los datos del recurso.
             ResourceIterator i;
             i = result.getIterator();
@@ -266,7 +229,7 @@ public class ControladorArticulo {
 
         //Elemento raíz
         Document darticulo = implementation.createDocument(null, "Articulos", null);
-        ;
+
         //Se escribe el contenido del XML en un archivo
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = null;
@@ -274,7 +237,7 @@ public class ControladorArticulo {
             transformer = transformerFactory.newTransformer();
         } catch (
                 TransformerConfigurationException e) {
-            e.printStackTrace();
+            System.out.println("Problemas en la configuracion");
         }
         DOMSource source = new DOMSource(darticulo);
         StreamResult result = new StreamResult(f);
@@ -282,8 +245,32 @@ public class ControladorArticulo {
             transformer.transform(source, result);
         } catch (
                 TransformerException e) {
-            e.printStackTrace();
+            System.out.println("Problemas al generar tu xml");
         }
+    }
+
+    public boolean Comprobacion(String articulo, Collection col) {
+
+        boolean resultado = false;
+        try {
+            XPathQueryService servicio = (XPathQueryService) col.getService("XPathQueryService", "1.0");
+            //Consulta para consultar la información de un departamento
+            ResourceSet result = servicio.query("/Articulos/Articulo[@id=" + articulo + "]");
+            ResourceIterator i;
+            i = result.getIterator();
+            col.close();
+            if (!i.hasMoreResources()) {
+                resultado = false;
+            } else {
+                resultado = true;
+            }
+        } catch (Exception e) {
+            System.out.println("Error al consultar.");
+
+        }
+
+        return resultado;
+
     }
 
 }

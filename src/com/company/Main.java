@@ -1,8 +1,10 @@
 package com.company;
 
+import com.company.ConsultasConInteraccion.ProductosClientes;
 import com.company.ConsultasConInteraccion.TotalComprasPorArticulo;
 import com.company.ConsultasSinInteraccion.ConsultaArticulosMasVendidos;
 import com.company.ConsultasSinInteraccion.ConsultaVentasPorVendedor;
+import com.company.ConsultasSinInteraccion.Totales;
 import com.company.Controladores.*;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.*;
@@ -49,7 +51,6 @@ public class Main {
                                 case 4:
                                     cCliente.ListarClientes(col);
                                     break;
-
                             }
                             break;
                         case 2:
@@ -97,24 +98,23 @@ public class Main {
                             try {
                                 //Consulta para consultar si existen clientes
                                 ResourceSet resultClientes = servicio.query("/Clientes/count(Cliente)");
-
                                 ResourceIterator i;
                                 i = resultClientes.getIterator();
-                                while(i.hasMoreResources()) {
+                                while (i.hasMoreResources()) {
                                     Resource r = i.nextResource();
                                     existenClientes = (String) r.getContent();
                                 }
                                 ResourceSet resultVendedores = servicio.query("/Vendedores/count(Vendedor)");
                                 ResourceIterator j;
                                 j = resultVendedores.getIterator();
-                                while(j.hasMoreResources()) {
+                                while (j.hasMoreResources()) {
                                     Resource t = j.nextResource();
                                     existenVendedores = (String) t.getContent();
                                 }
                                 ResourceSet resultArticulos = servicio.query("/Articulos/count(Articulo)");
                                 ResourceIterator s;
                                 s = resultArticulos.getIterator();
-                                while(!s.hasMoreResources()) {
+                                while (!s.hasMoreResources()) {
                                     Resource u = s.nextResource();
                                     existenArticulos = (String) u.getContent();
                                 }
@@ -128,12 +128,10 @@ public class Main {
                             }
                             if (existenClientes.equals("0")) {
                                 System.out.println("No existen clientes. No se puede realizar una compraventa");
-
                                 puedeComprar = false;
                             }
                             if (existenVendedores.equals("0")) {
                                 System.out.println("No existen vendedores. No se puede realizar una compraventa");
-
                                 puedeComprar = false;
                             }
                             if (puedeComprar) {
@@ -154,8 +152,6 @@ public class Main {
                                         cv.ListarCompraVenta(col);
                                         break;
                                 }
-
-
                             }
                             break;
                         case 5:
@@ -170,27 +166,33 @@ public class Main {
                             ConsultaArticulosMasVendidos consultaArticulosMasVendidos = new ConsultaArticulosMasVendidos();
                             consultaArticulosMasVendidos.ArticuloMasVendido(col);
                             break;
-
+                        case 8:
+                            Totales totales = new Totales();
+                            totales.Totales();
+                            break;
+                        case 9:
+                            ProductosClientes productosClientes = new ProductosClientes();
+                            productosClientes.productosXClientes(col);
+                            break;
                     }
 
-
                 } catch (XMLDBException e) {
-                    e.printStackTrace();
+                    System.out.println("No podemos acceder a la coleccion o está mal escrita la query.");
                 } catch (ParserConfigurationException e) {
-                    e.printStackTrace();
+                    System.out.println("Error de configuración.");
                 } catch (TransformerException e) {
-                    e.printStackTrace();
+                    System.out.println("Problemas al generar tu xml");
                 } catch (SAXException e) {
-                    e.printStackTrace();
+                    System.out.println("Problema al encapsular el xml.");
                 }
 
 
-            } while (!(op > 0 && op < 18));
+            } while (!(op > 0 && op < 11));
 
-    } while(op !=17);
+        } while (op != 10);
 
         System.out.println("FIN");
-}
+    }
 
 
     private static void mostrarMenu() {
@@ -200,15 +202,13 @@ public class Main {
         System.out.println("2 - Vendedores.");
         System.out.println("3 - Articulos.");
         System.out.println("4 - Compra-venta.");
-        System.out.println("5 - Consulta: Total Compras por articulo.");
+        System.out.println("5 - Consulta: Total Compras por articulo. (Solicito al usuario que elija un articulo).");
         System.out.println("6 - Consulta: Total Ventas por vendedor.");
         System.out.println("7 - Consulta: Articulo mas y menos vendido.");
+        System.out.println("8 - Consulta: Totales.");
+        System.out.println("9 - Consulta: Que productos ha comprado un cliente. (Solicito al usuario que elija un cliente).");
+        System.out.println("10 - Salir");
 
-       /*     System.out.println(
-                    "14. Crear Compra-Venta\n" +
-                        "15. Mostrar todas las compras hechas por cliente (Elegir Cliente) (Articulo-cantidad-Cliente - vendedor - total (cantidad * precio).\n" +
-                        "16. Media de las ventas por vendedor (elegir vendedor).\n" +
-                        "17. Media de ventas totales (sin interaccion con el usuario");*/
     }
 
     private static void menuClientes() {

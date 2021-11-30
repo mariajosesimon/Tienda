@@ -7,7 +7,6 @@ public class Compra {
 
     //Constructores
 
-
     public Compra(String nombreArticulo, int cantidad) {
 
         this.nombreArticulo = nombreArticulo;
@@ -18,8 +17,6 @@ public class Compra {
     }
 
     //Getter y setters
-
-
 
 
     public String getNombreArticulo() {

@@ -16,7 +16,6 @@ public class Conexion {
     static Collection col = null;
 
 
-
     public static Collection conectar() {
 
         try {
@@ -27,16 +26,12 @@ public class Conexion {
             return col;
         } catch (XMLDBException e) {
             System.out.println("Error al inicializar la BD eXist.");
-            //e.printStackTrace();
         } catch (ClassNotFoundException e) {
             System.out.println("Error en el driver.");
-            //e.printStackTrace();
         } catch (InstantiationException e) {
             System.out.println("Error al instanciar la BD.");
-            //e.printStackTrace();
         } catch (IllegalAccessException e) {
             System.out.println("Error al instanciar la BD.");
-            //e.printStackTrace();
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         } catch (NoSuchMethodException e) {

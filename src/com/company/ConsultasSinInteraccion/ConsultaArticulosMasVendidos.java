@@ -40,6 +40,8 @@ public class ConsultaArticulosMasVendidos {
 
         i = result.getIterator();
 
+        /*Genero un xml para poder luego leerlo y mostrar el resultado que necesito por pantalla.*/
+
         FileWriter f = new FileWriter("Result.xml");
 
         String resultado = "";
@@ -47,12 +49,11 @@ public class ConsultaArticulosMasVendidos {
         while (i.hasMoreResources()) {
             Resource r = i.nextResource();
             resultado = r.getContent().toString();
-          //  System.out.println(resultado);
+            //  System.out.println(resultado);
             f.write(resultado);
         }
         f.write("</Resultados>"); // Fin del nodo raiz
         f.close();
-
 
         File fileReader = new File("Result.xml");
 
@@ -62,31 +63,30 @@ public class ConsultaArticulosMasVendidos {
         document.getDocumentElement().normalize();
 
         NodeList nList = document.getElementsByTagName("Result");
-        String articuloMayor="";
-        String articuloMenor="";
-        int cantidadMayor=Integer.MIN_VALUE;
-        int cantidadMenor=Integer.MAX_VALUE;
+        String articuloMayor = "";
+        String articuloMenor = "";
+        int cantidadMayor = Integer.MIN_VALUE;
+        int cantidadMenor = Integer.MAX_VALUE;
         for (int temp = 0; temp < nList.getLength(); temp++) {
             Node nNode = nList.item(temp);
             if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                 Element eElement = (Element) nNode;
-                if(cantidadMayor< Integer.parseInt(eElement.getElementsByTagName("Total").item(0).getTextContent())){
+                if (cantidadMayor < Integer.parseInt(eElement.getElementsByTagName("Total").item(0).getTextContent())) {
                     cantidadMayor = Integer.parseInt(eElement.getElementsByTagName("Total").item(0).getTextContent());
                     articuloMayor = eElement.getElementsByTagName("Art").item(0).getTextContent();
                 }
-                if(cantidadMenor> Integer.parseInt(eElement.getElementsByTagName("Total").item(0).getTextContent())){
+                if (cantidadMenor > Integer.parseInt(eElement.getElementsByTagName("Total").item(0).getTextContent())) {
                     cantidadMenor = Integer.parseInt(eElement.getElementsByTagName("Total").item(0).getTextContent());
                     articuloMenor = eElement.getElementsByTagName("Art").item(0).getTextContent();
                 }
-
             }
-
         }// Fin del for
 
         System.out.println("El articulo más vendido es " + articuloMayor + ". Se han vendido " + cantidadMayor + " unidades.");
         System.out.println("El articulo menos vendido es " + articuloMenor + ". Se han vendido " + cantidadMenor + " unidades.");
 
 
+        col.close();
     } // fin public void
 
 
